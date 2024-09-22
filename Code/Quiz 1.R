@@ -1,4 +1,14 @@
 
+#' @title 
+#' Johns Hopkins University - Data Science Capstone on Coursera
+#' 
+#' @author 
+#' Carolina San Martín
+#' 
+#' @description 
+#' Quiz 1
+
+
 ### Question 0: Exploring data =================================================
 
 # Due to the size of the file, the idea is working with an R connection
