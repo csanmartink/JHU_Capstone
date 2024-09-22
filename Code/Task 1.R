@@ -78,3 +78,29 @@ writeLines(sampled, 'Data/sampled/sample_data.txt')
 
 # remove temporary variables
 rm(sample_twitter,sample_news,sample_blogs,sample_data)
+
+
+## Tokenization ================================================================
+
+# Using the tm package, the sampled data is used to create a corpus. Subsequently, the the following transformations are performed:
+
+# convert to lowercase
+# characters /, @ |
+#         common punctuation
+# numbers
+# English stop words
+# strip whitespace
+# stemming (Porter’s stemming)
+
+
+# Take sampled data
+file <- file.path('Data/sampled', '')
+doc <- Corpus(DirSource(file))
+
+# Convert to lowercase
+doc <- tm_map(doc, content_transformer(tolower))
+
+# Remove more transforms
+toSpace <- content_transformer(function(x, pattern) gsub(pattern, ' ', x))
+doc <- tm_map(doc, toSpace, '/|@|\\|')
+
