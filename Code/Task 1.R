@@ -1,7 +1,18 @@
 
+#' @title 
+#' Johns Hopkins University - Data Science Capstone on Coursera
+#' 
+#' @author 
+#' Carolina San Martín
+#' 
+#' @description 
+#' Task 1 - Getting and cleaning data
+
+
 ## Setting the environment to work =============================================
 
-packages <- c('R.utils','tm')
+packages <- c('R.utils','tm','SnowballC')
+
 for(p in packages) {
         if (!require(p,character.only = TRUE)) 
                 install.packages(p); 
@@ -104,3 +115,22 @@ doc <- tm_map(doc, content_transformer(tolower))
 toSpace <- content_transformer(function(x, pattern) gsub(pattern, ' ', x))
 doc <- tm_map(doc, toSpace, '/|@|\\|')
 
+# remove punctuation
+# remove numbers
+# strip whitespace
+removing <- c('removePunctuation','removeNumbers','stripWhitespace')
+for (f in 1:length(removing)) {
+        doc <- tm_map(doc, eval(parse(text=removing[f])))
+}
+
+# remove english stop words
+doc <- tm_map(doc, removeWords, stopwords("english"))
+
+# initiate stemming
+doc <- tm_map(doc, stemDocument)
+
+
+
+
+
+## Profanity filtering =========================================================
