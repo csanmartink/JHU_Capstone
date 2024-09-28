@@ -11,7 +11,7 @@
 
 ## Setting the environment to work =============================================
 
-packages <- c('R.utils','tm','SnowballC')
+packages <- c('R.utils','tm','SnowballC','magrittr','dplyr','RWeka')
 
 for(p in packages) {
         if (!require(p,character.only = TRUE)) 
@@ -23,7 +23,7 @@ for(p in packages) {
 source <- c('blogs','news','twitter')
 
 # Create required folders 
-folder <- c('raw','sampled')
+folder <- c('raw','sampled','input')
 for (f in 1:length(folder)) {
         
         if (!file.exists(paste0('Data/',folder[f]))) {
@@ -37,15 +37,15 @@ for (f in 1:length(folder)) {
 ## Obtaining data required =====================================================
 
 # Downloading and unzipping dataset
-if(!file.exists("Data/raw/en_US.blogs.txt")){
+if(!file.exists('Data/raw/en_US.blogs.txt')){
         
-        fileUrl <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
-        download.file(fileUrl, destfile = "Data/Dataset.zip", method = "curl")
+        fileUrl <- 'https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip'
+        download.file(fileUrl, destfile = 'Data/Dataset.zip', method = 'curl')
         
         # Unzip dataSet to /dataset/raw directory
-        unzip(zipfile = "Data/Dataset.zip", exdir= "Data/raw")
+        unzip(zipfile = 'Data/Dataset.zip', exdir= 'Data/raw')
 } else {
-        print("Files are already downloaded :)")
+        print('Files are already downloaded :)')
 }
 
 
@@ -93,44 +93,64 @@ rm(sample_twitter,sample_news,sample_blogs,sample_data)
 
 ## Tokenization ================================================================
 
-# Using the tm package, the sampled data is used to create a corpus. Subsequently, the the following transformations are performed:
-
-# convert to lowercase
-# characters /, @ |
-#         common punctuation
-# numbers
-# English stop words
-# strip whitespace
-# stemming (Porter’s stemming)
-
+# Using the tm package, the sampled data is used to create a corpus. 
 
 # Take sampled data
 file <- file.path('Data/sampled', '')
 doc <- Corpus(DirSource(file))
 
-# Convert to lowercase
-doc <- tm_map(doc, content_transformer(tolower))
+# Define a function in order to convert characters UTF-8 to ASCII. The non-convertible characters will be replaced witha a blank. The goal is to remove all special characters 
+char <- c("'")
+textToAscii <- function(x) (iconv(x, "UTF-8", "ASCII", sub = ""))
 
-# Remove more transforms
-toSpace <- content_transformer(function(x, pattern) gsub(pattern, ' ', x))
-doc <- tm_map(doc, toSpace, '/|@|\\|')
+# Corpus creation
+doc_clean <- VCorpus(VectorSource(doc))
+# Substitute specific special characters (hexadecimal X92 e X91)
+doc_clean <- tm_map(doc_clean, content_transformer(gsub), pattern = char, replacement = "'", ignore.case = TRUE)
 
-# remove punctuation
-# remove numbers
-# strip whitespace
-removing <- c('removePunctuation','removeNumbers','stripWhitespace')
-for (f in 1:length(removing)) {
-        doc <- tm_map(doc, eval(parse(text=removing[f])))
-}
+# Remove special characters
+doc_clean <- tm_map(doc_clean, content_transformer(textToAscii))
 
-# remove english stop words
-doc <- tm_map(doc, removeWords, stopwords("english"))
+# Convert all characters into lowercase
+doc_clean <- tm_map(doc_clean, content_transformer(tolower))
 
-# initiate stemming
-doc <- tm_map(doc, stemDocument)
-
-
-
+# Remove web urls
+doc_clean <- tm_map(doc_clean, content_transformer(gsub), pattern = "http\\S+\\s*", replacement = "", ignore.case = TRUE)
 
 
 ## Profanity filtering =========================================================
+
+# Download and cleaning a list of profanities
+if (!file.exists('Data/input/Profanity-list.csv')) {
+
+        fileUrl <- 'https://www.frontgatemedia.com/wp-content/uploads/2014/03/Terms-to-Block.csv'
+        download.file(fileUrl, destfile = 'Data/input/Profanity-list.csv', method = 'curl')
+        
+} else {
+        print('File is already downloaded :)')
+}
+
+# Leaving data as clean dataframe
+profanity <- read.csv('Data/input/profanity-list.csv', header = FALSE, 
+                      skip = 4)
+profanity %<>% select(V2) %>% rename(word = V2)
+profanity$word <- gsub(',','',profanity$word)
+profanities <- as.character(profanity$word)
+
+# Remove profane words. It is suitable to do before removing numbers as some profane words contain numbers (i.e. "a55" for "ass")
+doc_clean <- tm_map(doc_clean, removeWords, profanities)
+
+
+## Final cleanining ============================================================
+
+# Remove English stopwords
+doc_clean <- tm_map(doc_clean, removeWords, stopwords('english'))
+
+# Remove punctuation, numbers, and strip whitespace
+removing <- c('removePunctuation','removeNumbers','stripWhitespace')
+for (f in 1:length(removing)) {
+        doc_clean <- tm_map(doc_clean, eval(parse(text=removing[f])))
+}
+
+# Stemming (Porter’s stemming)
+doc_clean <- tm_map(doc_clean, stemDocument)
