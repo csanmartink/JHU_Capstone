@@ -23,7 +23,7 @@ for(p in packages) {
 source <- c('blogs','news','twitter')
 
 # Create required folders 
-folder <- c('raw','sampled','input')
+folder <- c('raw','sampled','input','output')
 for (f in 1:length(folder)) {
         
         if (!file.exists(paste0('Data/',folder[f]))) {
@@ -154,3 +154,14 @@ for (f in 1:length(removing)) {
 
 # Stemming (Porter’s stemming)
 doc_clean <- tm_map(doc_clean, stemDocument)
+
+# Save object to use in following tasks
+writeCorpus(doc_clean, 'Data/output')
+
+# Rename output file (not possible from the previous code line)
+if (file.exists('Data/output/1.txt')){
+        # Rename file name
+        file.rename('Data/output/1.txt','Data/output/clean_data.txt')
+} else {
+        print('File not found')
+}
