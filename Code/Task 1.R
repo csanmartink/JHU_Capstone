@@ -11,7 +11,7 @@
 
 ## Setting the environment to work =============================================
 
-packages <- c('R.utils','tm','SnowballC','magrittr','dplyr','RWeka')
+packages <- c('R.utils','tm','SnowballC','magrittr','dplyr','textreg','RWeka')
 
 for(p in packages) {
         if (!require(p,character.only = TRUE)) 
@@ -157,6 +157,7 @@ doc_clean <- tm_map(doc_clean, stemDocument)
 
 # Save object to use in following tasks
 writeCorpus(doc_clean, 'Data/output')
+save.corpus.to.files(doc_clean, filename = 'Data/output/clean_data')
 
 # Rename output file (not possible from the previous code line)
 if (file.exists('Data/output/1.txt')){
