@@ -91,7 +91,11 @@ writeLines(sampled, 'Data/sampled/sample_data.txt')
 rm(sample_twitter,sample_news,sample_blogs,sample_data)
 
 
+<<<<<<< HEAD
 ## Initial cleaning ============================================================
+=======
+## Tokenization ================================================================
+>>>>>>> f8921f073c4d7934e0a8252a02e7d54bcddabcdd
 
 # Using the tm package, the sampled data is used to create a corpus. 
 
