@@ -94,12 +94,13 @@ rm(sample_twitter,sample_news,sample_blogs)
 
 # Using the tm package, the sampled data is used to create a corpus. 
 
-for (s in 1:length(source)) {
-        
 # Take sampled data
-        file <- (paste0('Data/sampled/sampled_',source[s],'txt'))
+        file <- file.path('/Users/CS/Desktop/JHU - Data Science/10 - Capstone/Tasks/Data/sampled')
+        
         doc <- Corpus(DirSource(file))
 
+        for (s in 1:length(source)) {
+                
 # Define a function in order to convert characters UTF-8 to ASCII. The non-convertible characters will be replaced witha a blank. The goal is to remove all special characters 
 char <- c("'")
 textToAscii <- function(x) (iconv(x, "UTF-8", "ASCII", sub = ""))
