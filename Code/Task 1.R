@@ -95,18 +95,18 @@ rm(sample_twitter,sample_news,sample_blogs)
 # Using the tm package, the sampled data is used to create a corpus. 
 
 # Take sampled data
-        file <- file.path('/Users/CS/Desktop/JHU - Data Science/10 - Capstone/Tasks/Data/sampled')
+file <- file.path('/Users/CS/Desktop/JHU - Data Science/10 - Capstone/Tasks/Data/sampled')
         
-        doc <- Corpus(DirSource(file))
+doc <- Corpus(DirSource(file))
 
-        for (s in 1:length(source)) {
-                
 # Define a function in order to convert characters UTF-8 to ASCII. The non-convertible characters will be replaced witha a blank. The goal is to remove all special characters 
 char <- c("'")
 textToAscii <- function(x) (iconv(x, "UTF-8", "ASCII", sub = ""))
 
 # Corpus creation
 doc_clean <- VCorpus(VectorSource(doc))
+names(doc_clean) <- source
+
 # Substitute specific special characters (hexadecimal X92 e X91)
 doc_clean <- tm_map(doc_clean, content_transformer(gsub), pattern = char, replacement = "'", ignore.case = TRUE)
 
@@ -119,9 +119,6 @@ doc_clean <- tm_map(doc_clean, content_transformer(tolower))
 # Remove web urls
 doc_clean <- tm_map(doc_clean, content_transformer(gsub), pattern = "http\\S+\\s*", replacement = "", ignore.case = TRUE)
 
-        assign(paste0('clean_',source[s]),doc_clean)
-
-}
 
 ## Profanity filtering =========================================================
 
@@ -162,7 +159,9 @@ doc_clean <- tm_map(doc_clean, stemDocument)
 
 # Save object to use in following tasks
 writeCorpus(doc_clean, 'Data/output')
-save.corpus.to.files(doc_clean, filename = 'Data/output/clean_data')
+save.corpus.to.files(doc_clean, filename = 'Data/output/')
+save(doc_clean, file = 'Data/output/clean_data.RData')
+
 
 # Rename output file (not possible from the previous code line)
 if (file.exists('Data/output/1.txt')){
