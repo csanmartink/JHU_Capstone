@@ -81,23 +81,24 @@ for (s in 1:length(source)) {
         lines <- readLines(raw, encoding = 'UTF-8')
         close(raw)
         sampled <- lines[sample(1:length(lines),10000)]
-        assign(paste0('sample_',source[s]),sampled)
+        #assign(paste0('sample_',source[s]),sampled)
+
+        writeLines(sampled, paste0('Data/sampled/sampled_',source[s],'.txt'))
 }
 
-sampled <- c(sample_twitter,sample_news,sample_blogs)
-writeLines(sampled, 'Data/sampled/sample_data.txt')
-
 # remove temporary variables
-rm(sample_twitter,sample_news,sample_blogs,sample_data)
+rm(sample_twitter,sample_news,sample_blogs)
 
 
 ## Initial cleaning ============================================================
 
 # Using the tm package, the sampled data is used to create a corpus. 
 
+for (s in 1:length(source)) {
+        
 # Take sampled data
-file <- file.path('Data/sampled', '')
-doc <- Corpus(DirSource(file))
+        file <- (paste0('Data/sampled/sampled_',source[s],'txt'))
+        doc <- Corpus(DirSource(file))
 
 # Define a function in order to convert characters UTF-8 to ASCII. The non-convertible characters will be replaced witha a blank. The goal is to remove all special characters 
 char <- c("'")
@@ -117,6 +118,9 @@ doc_clean <- tm_map(doc_clean, content_transformer(tolower))
 # Remove web urls
 doc_clean <- tm_map(doc_clean, content_transformer(gsub), pattern = "http\\S+\\s*", replacement = "", ignore.case = TRUE)
 
+        assign(paste0('clean_',source[s]),doc_clean)
+
+}
 
 ## Profanity filtering =========================================================
 
