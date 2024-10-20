@@ -170,3 +170,6 @@ if (file.exists('Data/output/1.txt')){
 } else {
         print('File not found')
 }
+
+# Drop temporal files to keep memory use under control in the environment
+rm(doc,doc_clean)
